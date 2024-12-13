@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive School Marksheet Generator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #007BFF;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .subject-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            min-width: 600px;
+        }
+
+        .subject-table th, .subject-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .subject-table th {
+            background-color: #007BFF;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .subject-table input[type="text"], 
+        .subject-table input[type="number"] {
+            width: 90%;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .result p {
+            margin: 10px 0;
+        }
+
+        @media (max-width: 600px) {
+            button {
+                width: 100%;
+                padding: 10px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Marksheet Generator</h1>
+        </div>
+        
+        <div class="table-wrapper">
+            <table class="subject-table" id="subjects-table">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>CQ Marks (Max 70)</th>
+                        <th>MCQ Marks (Max 30)</th>
+                        <th>Practical Marks (Optional, Max 25)</th>
+                        <th>Total Marks</th>
+                    </tr>
+                </thead>
+                <tbody id="subjects-container">
+                    <tr>
+                        <td><input type="text" placeholder="Subject Name" class="subject-name"></td>
+                        <td><input type="number" class="cq-marks" min="0" max="70"></td>
+                        <td><input type="number" class="mcq-marks" min="0" max="30"></td>
+                        <td><input type="number" class="practical-marks" min="0" max="25"></td>
+                        <td class="total-marks-cell">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="buttons">
+            <button onclick="addSubject()">Add Subject</button>
+            <button onclick="calculateResult()">Calculate Result</button>
+        </div>
+
+        <div class="result" id="result">
+            <!-- Total and percentage will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        function addSubject() {
+            const container = document.getElementById('subjects-container');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Subject Name" class="subject-name"></td>
+                <td><input type="number" class="cq-marks" min="0" max="70"></td>
+                <td><input type="number" class="mcq-marks" min="0" max="30"></td>
+                <td><input type="number" class="practical-marks" min="0" max="25"></td>
+                <td class="total-marks-cell">0</td>
+            `;
+            container.appendChild(newRow);
+        }
+
+        function calculateResult() {
+            const rows = document.querySelectorAll('#subjects-container tr');
+            let grandTotal = 0;
+            let totalSubjects = 0;
+
+            rows.forEach(row => {
+                const cqMarks = parseFloat(row.querySelector('.cq-marks').value) || 0;
+                const mcqMarks = parseFloat(row.querySelector('.mcq-marks').value) || 0;
+                const practicalMarks = parseFloat(row.querySelector('.practical-marks').value) || 0;
+
+                const total = cqMarks + mcqMarks + practicalMarks;
+                row.querySelector('.total-marks-cell').textContent = total;
+
+                grandTotal += total;
+                totalSubjects += 1;
+            });
+
+            if (totalSubjects === 0) {
+                alert('Please enter marks for at least one subject.');
+                return;
+            }
+
+            const percentage = (grandTotal / (totalSubjects * 100)) * 100;
+            let comment = '';
+
+            if (percentage >= 90) {
+                comment = 'Excellent';
+            } else if (percentage >= 80) {
+                comment = 'Very Good';
+            } else if (percentage >= 70) {
+                comment = 'Good';
+            } else if (percentage >= 60) {
+                comment = 'Satisfactory';
+            } else if (percentage >= 50) {
+                comment = 'Needs Improvement';
+            } else {
+                comment = 'Poor';
+            }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <p>Total Marks: ${grandTotal}</p>
+                <p>Percentage: ${percentage.toFixed(2)}%</p>
+                <p>Comment: ${comment}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
